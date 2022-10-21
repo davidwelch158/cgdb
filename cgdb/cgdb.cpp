@@ -823,6 +823,12 @@ static int main_loop(void)
                 return -1;
         }
 
+	if (FD_ISSET(gdb_mi_fd, &rset)) {
+            if (gdb_input(gdb_mi_fd) == -1) {
+                return -1;
+            }
+        }
+
         /* gdb's output -> stdout */
         if (FD_ISSET(gdb_console_fd, &rset)) {
             if (gdb_input(gdb_console_fd) == -1) {
@@ -838,13 +844,7 @@ static int main_loop(void)
             if (kui_ctx->cangetkey()) {
                 user_input_loop();
             }
-        }
-
-        if (FD_ISSET(gdb_mi_fd, &rset)) {
-            if (gdb_input(gdb_mi_fd) == -1) {
-                return -1;
-            }
-        }
+        }        
     }
     return 0;
 }

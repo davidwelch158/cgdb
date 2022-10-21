@@ -392,6 +392,25 @@ static void gdbwire_stream_record_callback(void *context,
 {
     struct tgdb *tgdb = (struct tgdb*)context;
 
+    if (stream_record->kind == GDBWIRE_MI_TARGET) {
+      std::string orig_msg(stream_record->cstring);
+      std::string msg;
+      bool last_was_formfeed = false;
+      for (auto ch : orig_msg) {
+	if (ch == '\r') {
+	  last_was_formfeed = true;
+	} else {
+	  last_was_formfeed = false;
+	}
+	if (ch == '\n' && !last_was_formfeed) {
+	  msg.push_back('\r');
+	}
+	msg.push_back(ch);
+      }
+      tgdb->callbacks.console_output_callback(tgdb->callbacks.context, msg);
+      return;
+    }
+
     switch (tgdb->current_request_type) {
         case TGDB_REQUEST_BREAKPOINTS:
         case TGDB_REQUEST_INFO_FRAME:
